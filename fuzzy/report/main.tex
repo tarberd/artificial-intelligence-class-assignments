@@ -2,14 +2,29 @@
 
 \title{Trabalho Prático 4}
 
-\author{
-  Bernardo Ferrari \and
-  Matheus Teixeira
-}
+\author{Bernardo Ferrari \and Matheus Teixeira}
 
 \date{Novembro 2019}
 
 \begin{document}
 \maketitle
+
+\section{Introdução}
+
+Esse trabalho propõem uma solução para a simulação de estacionamento de
+caminhões utilizando a biblioteca \textbf{jFuzzy} juntamente a um cliente
+java conectado a simulação através de sockets.
+
+\section{Desenvolvimento}
+
+Foi desenvolvido um programa cliente em java que recebe a posição $(x, y)$, $x, y \in [0, 1]$,
+acompanhada do angulo $angle \in [0, 360]$ entre o caminhão e o fundo do estacionamento.
+É feita a computação da direção do volante do caminhão como saída $wheel \in [-1.0, 1.0]$.
+
+Essa computação é feita através de um sistema fuzzy descrito em `Fuzzy Control Language' (FCL) e
+essa descrição é interpretada pela biblioteca java jFuzzy e para executar as computações são
+utilizados os seguintes comandos java:
+
+\section{Conclusão}
 
 \end{document}
