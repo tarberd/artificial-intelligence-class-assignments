@@ -32,7 +32,8 @@ essa descrição é interpretada pela biblioteca java jFuzzy e para executar as 
 o código java~\ref{listing:jfuzzy}.
 
 \begin{listing}[h!]
-  \begin{minted}[breaklines, breakanywhere]{java}
+  \begin{minted}[breaklines]{java}
+String fileName = "src/driver.fcl";
 FIS fis = FIS.load(fileName,true);
 fis.setVariable("x_pos", x);
 fis.setVariable("angle", angle);
@@ -40,6 +41,62 @@ fis.evaluate();
 double respostaDaSuaLogica = fis.getVariable("wheel").getValue();
   \end{minted}
   \caption{Utilização da biblioteca jFuzzy.}\label{listing:jfuzzy}
+\end{listing}
+
+Note que o código~\ref{listing:jfuzzy} lê de um arquivo chamado \textbf{driver.fcl}.
+Esse arquivo descreve em FCL o comportamento do sistema fuzzy e inclui as definições
+de variáveis de entrada e de saída, definições de \textit{fuzzify} das variáveis de entrada,
+definições de \textit{defuzzify} das variáveis de saída e as definições das regras fuzzy.
+
+Para o \textit{fuzzify} da variável $x\_pos$, foram criados conjuntos fuzzy para $center$, $left$ e $right$ utilizando trapézios para definição probabilidades.
+Os conjuntos fuzzy para a variável $x\_pos$ são descritos pelo bloco fuzzify descritos no código~\ref{listing:xposfuzzy}.
+
+\begin{listing}[h!]
+  \begin{minted}[breaklines]{text}
+FUZZIFY x_pos
+  TERM center := TRAPE 0.0 0.2 0.8 1.0;
+  TERM left := TRAPE -0.1 0 0.2 0.5;
+  TERM right := TRAPE 0.5 0.8 1 1.1;
+END_FUZZIFY
+\end{minted}
+  \caption{Conjuntos fuzzy para variável de entrada $x\_pos$.}\label{listing:xposfuzzy}
+\end{listing}
+
+Para o \textit{fuzzify} da variável $angle$, foram criados conjuntos fuzzy para $up$, $right$, $left$ e $down$ com sobreposição entre os trapézios.
+Além de $up\_left$, $left\_down$, $down\_right$ e $right\_up$, para melhor controle das regiões de intersecção dos conjuntos $up$, $right$, $left$ e $down$.
+Os conjuntos fuzzy para a variável $angle$ são descritos pelo bloco fuzzify descritos no código~\ref{listing:anglefuzzy}.
+
+\begin{listing}[h!]
+  \begin{minted}[breaklines]{text}
+FUZZIFY angle
+  TERM up         := TRAPE 0 80 100 180;
+  TERM up_left    := TRAPE 90 120 150 180;
+  TERM left       := TRAPE 90 170 190 270;
+  TERM left_down  := TRAPE 180 210 240 270;
+  TERM down       := TRAPE 180 260 280 360;
+  TERM down_right := TRAPE 270 300 330 360;
+  TERM right      := (0, 1) (2.5, 1) (90, 0) (270, 0) (357.5, 1) (360, 1);
+  TERM right_up   := TRAPE 0 30 60 90;
+END_FUZZIFY
+  \end{minted}
+  \caption{Conjuntos fuzzy para variável de entrada $angle$.}\label{listing:anglefuzzy}
+\end{listing}
+
+Para o \textit{defuzzify} da variável de saída $wheel$, foram criados conjuntos para $straight$, $turn\_left$ e $turn\_right$ com sobreposição entre os trapézios.
+Foi usado o método de centro de gravidade COG para defuzzificação da variável de valor padrão $default = 0$.
+Os conjuntos fuzzy para a variável $wheel$ são descritos pelo bloco defuzzify descritos no código~\ref{listing:wheelfuzzy}.
+
+\begin{listing}[h!]
+  \begin{minted}[breaklines]{text}
+DEFUZZIFY wheel
+  TERM straight := TRAPE -0.5 -0.1 0.1 0.5;
+  TERM turn_left := TRAPE -1.1 -1 -0.5 0;
+  TERM turn_right := TRAPE 0 0.5 1 1.1;
+  METHOD : COG;
+  DEFAULT := 0;
+END_DEFUZZIFY
+  \end{minted}
+  \caption{Conjuntos fuzzy para variável de saída $wheel$.}\label{listing:wheelfuzzy}
 \end{listing}
 
 \section{Conclusão}
