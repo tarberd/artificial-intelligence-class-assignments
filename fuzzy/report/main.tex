@@ -1,9 +1,15 @@
 \documentclass[12pt, a4paper]{article}
 
+\usepackage[
+  outputdir=target,
+  newfloat=true
+]{minted}
+\SetupFloatingEnvironment{listing}{name=Código}
+
+\usepackage{indentfirst}
+
 \title{Trabalho Prático 4}
-
 \author{Bernardo Ferrari \and Matheus Teixeira}
-
 \date{Novembro 2019}
 
 \begin{document}
@@ -22,8 +28,19 @@ acompanhada do angulo $angle \in [0, 360]$ entre o caminhão e o fundo do estaci
 É feita a computação da direção do volante do caminhão como saída $wheel \in [-1.0, 1.0]$.
 
 Essa computação é feita através de um sistema fuzzy descrito em `Fuzzy Control Language' (FCL) e
-essa descrição é interpretada pela biblioteca java jFuzzy e para executar as computações são
-utilizados os seguintes comandos java:
+essa descrição é interpretada pela biblioteca java jFuzzy e para executar as computações é executado
+o código java~\ref{listing:jfuzzy}.
+
+\begin{listing}[h!]
+  \begin{minted}[breaklines, breakanywhere]{java}
+FIS fis = FIS.load(fileName,true);
+fis.setVariable("x_pos", x);
+fis.setVariable("angle", angle);
+fis.evaluate();
+double respostaDaSuaLogica = fis.getVariable("wheel").getValue();
+  \end{minted}
+  \caption{Utilização da biblioteca jFuzzy.}\label{listing:jfuzzy}
+\end{listing}
 
 \section{Conclusão}
 
