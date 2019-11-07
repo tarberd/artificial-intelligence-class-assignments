@@ -1,0 +1,13 @@
+MAS miners {
+
+	infrastructure: Centralised
+	
+	environment: env.planetEnv
+
+	agents:
+		builder;
+		col#3;
+
+	aslSourcePath:
+		"src/asl";
+}
