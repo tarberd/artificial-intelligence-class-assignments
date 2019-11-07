@@ -1,0 +1,85 @@
+// Block definition (there may be more than one block per file)
+FUNCTION_BLOCK driver
+
+// Define input variables
+VAR_INPUT
+    x_pos : REAL;
+    angle : REAL;
+END_VAR
+
+// Define output variable
+VAR_OUTPUT
+    wheel : REAL;
+END_VAR
+
+// Fuzzify input variable 'service'
+FUZZIFY x_pos
+    TERM center := TRAPE 0.0 0.2 0.8 1.0;
+    
+    TERM left := TRAPE -0.1 0 0.2 0.5;
+    
+    TERM right := TRAPE 0.5 0.8 1 1.1;    
+END_FUZZIFY
+
+// Fuzzify input variable 'food'™™
+FUZZIFY angle
+    TERM up         := TRAPE 0 80 100 180;
+    TERM up_left    := TRAPE 90 120 150 180;
+    TERM left       := TRAPE 90 170 190 270;
+    TERM left_down  := TRAPE 180 210 240 270;
+    TERM down       := TRAPE 180 260 280 360;
+    TERM down_right := TRAPE 270 300 330 360;
+    TERM right      := (0, 1) (2.5, 1) (90, 0) (270, 0) (357.5, 1) (360, 1);
+    TERM right_up   := TRAPE 0 30 60 90;
+END_FUZZIFY
+
+// Defzzzify output variable 'tip'
+DEFUZZIFY wheel
+    TERM straight := TRAPE -0.5 -0.1 0.1 0.5;
+    TERM turn_left := TRAPE -1.1 -1 -0.5 0;
+    TERM turn_right := TRAPE 0 0.5 1 1.1;
+    // Use 'Center Of Gravity' defuzzification method
+    METHOD : COG;
+    // Default value is 0 (if no rule activates defuzzifier)
+    DEFAULT := 0;
+END_DEFUZZIFY
+
+RULEBLOCK drive
+    // Use 'min' for 'and' (also implicit use 'max'
+    // for 'or' to fulfill DeMorgan's Law)
+    AND : MIN;
+    // Use 'min' activation method
+    ACT : MIN;
+    // Use 'max' accumulation method
+    ACCU : MAX;
+
+	RULE 1 : IF x_pos IS left AND angle IS right      THEN wheel IS turn_right;
+	RULE 2 : IF x_pos IS left AND angle IS right_up   THEN wheel IS turn_right;
+	RULE 3 : IF x_pos IS left AND angle IS up         THEN wheel IS turn_right;
+	RULE 4 : IF x_pos IS left AND angle IS up_left    THEN wheel IS straight;
+	RULE 5 : IF x_pos IS left AND angle IS left       THEN wheel IS straight;
+	RULE 6 : IF x_pos IS left AND angle IS left_down  THEN wheel IS turn_left;
+	RULE 7 : IF x_pos IS left AND angle IS down       THEN wheel IS turn_left;
+	RULE 8 : IF x_pos IS left AND angle IS down_right THEN wheel IS turn_left;
+    
+    RULE 9  : IF x_pos IS right AND angle IS right      THEN wheel IS straight;
+	RULE 10 : IF x_pos IS right AND angle IS right_up   THEN wheel IS straight;
+	RULE 11 : IF x_pos IS right AND angle IS up         THEN wheel IS turn_left;
+	RULE 12 : IF x_pos IS right AND angle IS up_left    THEN wheel IS turn_left;
+	RULE 13 : IF x_pos IS right AND angle IS left       THEN wheel IS turn_left;
+	RULE 14 : IF x_pos IS right AND angle IS left_down  THEN wheel IS turn_right;
+	RULE 15 : IF x_pos IS right AND angle IS down       THEN wheel IS turn_right;
+	RULE 16 : IF x_pos IS right AND angle IS down_right THEN wheel IS turn_right;
+	
+	RULE 17 : IF x_pos IS center AND angle IS right      THEN wheel IS turn_right;
+	RULE 18 : IF x_pos IS center AND angle IS right_up   THEN wheel IS turn_right;
+	RULE 19 : IF x_pos IS center AND angle IS up         THEN wheel IS straight;
+	RULE 20 : IF x_pos IS center AND angle IS up_left    THEN wheel IS turn_left;
+	RULE 21 : IF x_pos IS center AND angle IS left       THEN wheel IS turn_left;
+	RULE 22 : IF x_pos IS center AND angle IS left_down  THEN wheel IS turn_left;
+	RULE 23 : IF x_pos IS center AND angle IS down       THEN wheel IS turn_left;
+	RULE 24 : IF x_pos IS center AND angle IS down_right THEN wheel IS turn_right;
+			
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
