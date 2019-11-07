@@ -1,0 +1,106 @@
+\documentclass[12pt]{article}
+
+\usepackage{minted}
+
+\title{Relatório do Trabalho de Agentes}
+\author{Bernardo Ferrari \and Matheus Teixeira}
+
+\date{Outubro 2019}
+
+\begin{document}
+
+\maketitle
+
+\section{Mudanças feitas para questões A, B e C:}
+
+Como as trés questões do trabalho estavam relacionadas com a comunicação da posição de recursos,
+revolvemos primeiro criar uma regra para que os agentes coletores
+pudessem compartilhar a posição de quaisquer recursos que eles encontrassem.
+Essa regra tomou a seguinte forma:
+\begin{quote}
+\begin{minted}[breaklines]{c}
++found(R)
+   :  my_pos(X, Y) & not there_is_resource_at(R, X, Y)
+   <- +there_is_resource_at(R, X, Y);
+      .print("I found resource (", R, ") at (", X, ", ", Y, ") ,telling others!");
+      .my_name(My_name);
+      .all_names(All_names);
+      .delete(builder, All_names, All_names_less_builder);
+      .delete(My_name, All_names_less_builder, All_names_less_builder_less_myself);
+      for( .member(Agent, All_names_less_builder_less_myself) )
+      {
+        .send(Agent, tell, there_is_resource_at(R, X, Y));
+      }.
+\end{minted}
+\end{quote}
+
+Sempre que receber um \textbf{found(R)} do ambiente e ele não acredita que \textbf{there\_is\_resource\_at(R, X, Y)},
+o Coletor adiciona um \textbf{belief} que existe um recurso {R} na prosição {(X, Y)} e envia essa informação para todos
+os outros coletores.
+
+A próxima modificação foi adicionar uma nova meta para o coletor caso ele esteja \textbf{!check\_for\_resources} e não acredite em \textbf{found(R)}.
+Essa modificação tomou a seguinte forma:
+\begin{quote}
+\begin{minted}[breaklines]{c}
++!check_for_resources
+   :  resource_needed(R) & not found(R)
+   <- .wait(100);
+      !check_for_resources_found_by_others(R).
+
++!check_for_resources_found_by_others(R)
+   :  there_is_resource_at(R, X, Y)
+   <- -checking_cells;
+      +pos(maybe, X, Y);
+      !go(maybe);
+      -pos(maybe, X, Y);
+      +checking_cells;
+      if(not found(R)){
+        .abolish(there_is_resource_at(R, X, Y));
+        !tell_others_there_is_no_more_resource_at(R, X, Y);
+      }
+      !check_for_resources.
+
++!tell_others_there_is_no_more_resource_at(R, X, Y)
+   : true
+   <- .my_name(My_name);
+      .all_names(All_names);
+      .delete(builder, All_names, All_names_less_builder);
+      .delete(My_name, All_names_less_builder, All_names_less_builder_less_myself);
+      for( .member(Agent, All_names_less_builder_less_myself) )
+      {
+        .send(Agent, achieve, remove_there_is_resource_at(R, X, Y));
+      }.
+
++!remove_there_is_resource_at(R, X, Y) : true <- .abolish(there_is_resource_at(R, X, Y)).
+
++!check_for_resources_found_by_others(R)
+   :  not there_is_resource_at(R, X, Y)
+   <- move_to(next_cell).
+\end{minted}
+\end{quote}
+
+Nesse caso, o coletor procura em seu banco de dados de \textbf{beliefs} se ele sabe de alguma posição que contém o recurso desejado
+e desloca-se até essa posição. Caso ele encontre um recurso lá, ele começa a minerar, caso não haja recurso ele avisa todos os outros
+que na posição {(X, Y)} não ha mais recurso.
+
+Por fim, se o recurso que está sendo coletado é esgotado, é por essa modificação que ocorre o aviso:
+\begin{quote}
+\begin{minted}[breaklines]{c}
++!continue_mine : true
+   <-
+      ?pos(back, X, Y);
+      if(there_is_resource_at(R, X, Y)){
+        !go(back);
+      }
+      -pos(back,X,Y);
+      +checking_cells;
+      if(not found(R)){
+        .abolish(there_is_resource_at(R, X, Y));
+        !tell_others_there_is_no_more_resource_at(R, X, Y);
+      }
+      !check_for_resources.
+
+\end{minted}
+\end{quote}
+
+\end{document}
