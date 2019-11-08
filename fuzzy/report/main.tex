@@ -1,5 +1,7 @@
 \documentclass[12pt, a4paper]{article}
 
+\renewcommand{\figurename}{Figura}
+
 \usepackage[
   outputdir=target,
   newfloat=true
@@ -7,6 +9,7 @@
 \SetupFloatingEnvironment{listing}{name=Código}
 
 \usepackage{indentfirst}
+\usepackage{graphicx}
 
 \title{Trabalho Prático 4}
 \author{Bernardo Ferrari \and Matheus Teixeira}
@@ -49,7 +52,7 @@ de variáveis de entrada e de saída, definições de \textit{fuzzify} das vari�
 definições de \textit{defuzzify} das variáveis de saída e as definições das regras fuzzy.
 
 Para o \textit{fuzzify} da variável $x\_pos$, foram criados conjuntos fuzzy para $center$, $left$ e $right$ utilizando trapézios para definição probabilidades.
-Os conjuntos fuzzy para a variável $x\_pos$ são descritos pelo bloco fuzzify descritos no código~\ref{listing:xposfuzzy}.
+Os conjuntos fuzzy para a variável $x\_pos$ são descritos pelo bloco fuzzify descritos no código~\ref{listing:xposfuzzy} e na figura~\ref{figure:xposfuzzy}.
 
 \begin{listing}[h!]
   \begin{minted}[breaklines]{text}
@@ -62,9 +65,15 @@ END_FUZZIFY
   \caption{Conjuntos fuzzy para variável de entrada $x\_pos$.}\label{listing:xposfuzzy}
 \end{listing}
 
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{assets/x_pos.jpg}
+  \caption{Conjuntos fuzzy para variável de entrada $x\_pos$.}\label{figure:xposfuzzy}
+\end{figure}
+
 Para o \textit{fuzzify} da variável $angle$, foram criados conjuntos fuzzy para $up$, $right$, $left$ e $down$ com sobreposição entre os trapézios.
 Além de $up\_left$, $left\_down$, $down\_right$ e $right\_up$, para melhor controle das regiões de intersecção dos conjuntos $up$, $right$, $left$ e $down$.
-Os conjuntos fuzzy para a variável $angle$ são descritos pelo bloco fuzzify descritos no código~\ref{listing:anglefuzzy}.
+Os conjuntos fuzzy para a variável $angle$ são descritos pelo bloco fuzzify descritos no código~\ref{listing:anglefuzzy} e na figura~\ref{figure:anglefuzzy}.
 
 \begin{listing}[h!]
   \begin{minted}[breaklines]{text}
@@ -82,9 +91,15 @@ END_FUZZIFY
   \caption{Conjuntos fuzzy para variável de entrada $angle$.}\label{listing:anglefuzzy}
 \end{listing}
 
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{assets/angle.jpg}
+  \caption{Conjuntos fuzzy para variável de entrada $angle$.}\label{figure:anglefuzzy}
+\end{figure}
+
 Para o \textit{defuzzify} da variável de saída $wheel$, foram criados conjuntos para $straight$, $turn\_left$ e $turn\_right$ com sobreposição entre os trapézios.
 Foi usado o método de centro de gravidade COG para defuzzificação da variável de valor padrão $default = 0$.
-Os conjuntos fuzzy para a variável $wheel$ são descritos pelo bloco defuzzify descritos no código~\ref{listing:wheelfuzzy}.
+Os conjuntos fuzzy para a variável $wheel$ são descritos pelo bloco defuzzify descritos no código~\ref{listing:wheelfuzzy} e na figura~\ref{figure:wheelfuzzy}.
 
 \begin{listing}[h!]
   \begin{minted}[breaklines]{text}
@@ -99,6 +114,67 @@ END_DEFUZZIFY
   \caption{Conjuntos fuzzy para variável de saída $wheel$.}\label{listing:wheelfuzzy}
 \end{listing}
 
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{assets/wheel.jpg}
+  \caption{Conjuntos fuzzy para variável de entrada $wheel$.}\label{figure:wheelfuzzy}
+\end{figure}
+
+As regras foram descritas de maneira a refletir a intuição de um motorista de caminhão ao estacionar.
+Para isso foram criadas vinte e quatro regras, sendo resultado de uma regra para cada conjunto fuzzy de $x\_pos$ em combinação com cada conjunto fuzzy de $angle$ sendo $3 \times 8 = 24$.
+
+Quanto o caminhão se encontra no conjunto $left$ ou no conjunto $right$ ele possui uma tendencia fazer a variável $wheel$ virar o volante com o objetivo de convergir a variável $x\_pos$ para o conjunto $center$.
+Já quando se $x\_pos$ se encontra no conjunto $center$, o objetivo das regras é mantes o caminhão no conjunto $center$.
+Assim fazendo com que o caminhão sempre se alinhe com $x\_pos = 0.5$.
+
+Para controlar a convergência da posição $y$, as cardinalidades $left\_down$ e $down\_right$ fazem com que a variavel $wheel$ vire o caminhão para descer o caminhão até o estacionamento.
+
+As descrições das regras se encontram no apêndice~\ref{sec:apendice}
+
+
 \section{Conclusão}
+
+\appendix
+\section{Regras do sistema fuzzy}\label{sec:apendice}
+
+\begin{minted}[breaklines]{text}
+RULEBLOCK drive
+  // Use 'min' for 'and' (also implicit use 'max'
+  // for 'or' to fulfill DeMorgan's Law)
+  AND : MIN;
+  // Use 'min' activation method
+  ACT : MIN;
+  // Use 'max' accumulation method
+  ACCU : MAX;
+
+  RULE 1 : IF x_pos IS left AND angle IS right      THEN wheel IS turn_right;
+  RULE 2 : IF x_pos IS left AND angle IS right_up   THEN wheel IS turn_right;
+  RULE 3 : IF x_pos IS left AND angle IS up         THEN wheel IS turn_right;
+  RULE 4 : IF x_pos IS left AND angle IS up_left    THEN wheel IS straight;
+  RULE 5 : IF x_pos IS left AND angle IS left       THEN wheel IS straight;
+  RULE 6 : IF x_pos IS left AND angle IS left_down  THEN wheel IS turn_left;
+  RULE 7 : IF x_pos IS left AND angle IS down       THEN wheel IS turn_left;
+  RULE 8 : IF x_pos IS left AND angle IS down_right THEN wheel IS turn_left;
+
+  RULE 9  : IF x_pos IS right AND angle IS right      THEN wheel IS straight;
+  RULE 10 : IF x_pos IS right AND angle IS right_up   THEN wheel IS straight;
+  RULE 11 : IF x_pos IS right AND angle IS up         THEN wheel IS turn_left;
+  RULE 12 : IF x_pos IS right AND angle IS up_left    THEN wheel IS turn_left;
+  RULE 13 : IF x_pos IS right AND angle IS left       THEN wheel IS turn_left;
+  RULE 14 : IF x_pos IS right AND angle IS left_down  THEN wheel IS turn_right;
+  RULE 15 : IF x_pos IS right AND angle IS down       THEN wheel IS turn_right;
+  RULE 16 : IF x_pos IS right AND angle IS down_right THEN wheel IS turn_right;
+
+  RULE 17 : IF x_pos IS center AND angle IS right      THEN wheel IS turn_right;
+  RULE 18 : IF x_pos IS center AND angle IS right_up   THEN wheel IS turn_right;
+  RULE 19 : IF x_pos IS center AND angle IS up         THEN wheel IS straight;
+  RULE 20 : IF x_pos IS center AND angle IS up_left    THEN wheel IS turn_left;
+  RULE 21 : IF x_pos IS center AND angle IS left       THEN wheel IS turn_left;
+  RULE 22 : IF x_pos IS center AND angle IS left_down  THEN wheel IS turn_left;
+  RULE 23 : IF x_pos IS center AND angle IS down       THEN wheel IS turn_left;
+  RULE 24 : IF x_pos IS center AND angle IS down_right THEN wheel IS turn_right;
+
+END_RULEBLOCK
+\end{minted}
 
 \end{document}
