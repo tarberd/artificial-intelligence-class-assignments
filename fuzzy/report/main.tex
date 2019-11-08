@@ -20,6 +20,52 @@
 
 \section{Introdução}
 
+A logica fuzzy é uma forma de logica multi valorada onde os valores de verdade podem ser qualquer número real $t$, $t \in [0, 1]$,
+diferente da lógica clássica onde os valores de verdade são booleanos, ou seja, verdadeiro ou falso.
+
+Um sistema fuzzy consiste em executar os seguintes passos:
+\begin{itemize}
+    \item transformar as variáveis de entrada em conjuntos fuzzy através de uma função de pertinência.
+    \item executar todas as regras IF-THEN da base de regras para computar as variáveis de saída fuzzy.
+    \item transformar as variáveis de saída fuzzy em variáveis de saída através de um processo chamado defuzzificação.
+\end{itemize}
+
+\subsection{Fuzzyficação}
+
+A função de pertinência caracteriza um conjunto fuzzy.
+Ela atribui valor de verdade a um valor do domínio, construindo um conjunto de pares ordenados denominado conjunto fuzzy como descrito na equação~\ref{equ:conjuntofuzzy}.
+A função $\mu$ é a função de pertinência e o conjunto $U$ é o universo ou domínio.
+
+\begin{equation}\label{equ:conjuntofuzzy}
+  \{ (x, \mu(x)) | x \in U \}
+\end{equation}
+
+Esse processo é chamado fuzzyficação e pode mapear as variáveis do universo a diversos conjuntos fuzzy diferentes.
+Porém sempre caracterizados pelas suas funções de pertinência.
+
+\subsection{Definição e execução de regras IF-THEN}
+
+As regras mapeiam valores de verdade computados para desejadas variáveis de output como mostra o codigo~\ref{listing:ruleexemple}.
+
+\begin{listing}[h!]
+  \begin{minted}[breaklines]{java}
+IF x_pos IS center AND angle IS right THEN wheel IS turn_right;
+  \end{minted}
+  \caption{Utilização da biblioteca jFuzzy.}\label{listing:ruleexemple}
+\end{listing}
+
+As operações AND e OR são funções. O operador AND calcula o minimo entre as duas variáveis enquanto o operador OR calcula o máximo.
+
+As regras campiam o valor de verdade computado do lado do IF, para a variável de saída do lado do THEN\@.
+
+Se a mesma variável de saída ocorrer em diferentes regras do lado THEN, é adicionada a computação de OR entre o lado IF das respectivas regras.
+
+\subsection{Defuzzificação}
+
+Após a execução de regras nós temos valores de verdade para os conjuntos fuzzy da variável de saída e necessitamos transformar essa valor de verdade em um valor do domínio.
+Para atingir o valor de domínio utilizamos a definições de conjuntos fuzzy juntamente com algum algoritmo de defuzzificação.
+Um dos algoritmos mais utilizados é o de centro de massa de baixo da curva.
+
 Esse trabalho propõem uma solução para a simulação de estacionamento de
 caminhões utilizando a biblioteca \textbf{jFuzzy} juntamente a um cliente
 java conectado a simulação através de sockets.
@@ -139,8 +185,6 @@ Contudo, os conjuntos fuzzy foram tomando forma e acabaram refletindo, de maneir
 Para decidir os conjuntos fuzzy foi necessário abstrair oque é relevante do problema e identificar os limites de cada conjunto fuzzy.
 
 Apesar das dificuldade encontradas, o trabalho permitiu mostrar que com poucas regras e conjuntos é possível obter resultados satisfatórios.
-
-
 
 \appendix
 \section{Regras do sistema fuzzy}\label{sec:apendice}
