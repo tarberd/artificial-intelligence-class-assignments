@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "fashion-mnis"
+version = "0.1.0"
+description = ""
+authors = ["tarberd <bernardo.mferrari@gmail.com>"]
+
+[tool.poetry.scripts]
+fashion = "fashion_mnis:main"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+keras = "^2.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^3.0"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
